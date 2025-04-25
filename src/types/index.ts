@@ -8,6 +8,12 @@ export interface Asset {
   decimals: number;
 }
 
+interface TokenInfo {
+  name: string;
+  address: string;
+  decimal: number;
+}
+
 export interface Chain {
   id: number;
   name: string;
@@ -16,6 +22,9 @@ export interface Chain {
   iconUrl: string;
   rpcUrl: string;
   blockExplorerUrl: string;
+  pool: string,
+  bridge: string,
+  tokens: TokenInfo[];
 }
 
 export interface Transaction {

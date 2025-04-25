@@ -28,7 +28,7 @@ export default function AppHeader() {
   };
 
   return (
-    <header className="border-b border-neutral-800 bg-neutral-900">
+    <header className="border-b border-neutral-800 bg-neutral-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
@@ -59,16 +59,16 @@ export default function AppHeader() {
                   Pools
                 </div>
               </Link>
-              <Link href="/stake">
+              {/* <Link href="/stake">
                 <div className={`px-3 py-2 rounded-md text-sm cursor-pointer ${location === "/stake" ? "text-white font-medium" : "text-neutral-400 hover:text-primary-400"}`}>
                   Stake
                 </div>
-              </Link>
-              <Link href="/rewards">
+              </Link> */}
+              {/* <Link href="/rewards">
                 <div className={`px-3 py-2 rounded-md text-sm cursor-pointer ${location === "/rewards" ? "text-white font-medium" : "text-neutral-400 hover:text-primary-400"}`}>
                   Rewards
                 </div>
-              </Link>
+              </Link> */}
             </nav>
           </div>
 

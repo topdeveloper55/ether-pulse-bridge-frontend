@@ -5,7 +5,6 @@ import { Toaster } from "./components/ui/toaster";
 import NotFound from "./pages/not-found";
 import Bridge from "./pages/bridge";
 import Pools from "./pages/pools";
-import Stake from "./pages/stake";
 import Rewards from "./pages/rewards";
 import AppHeader from "./components/app-header";
 import AppFooter from "./components/app-footer";
@@ -18,8 +17,8 @@ function Router() {
       <Route path="/" component={Bridge} />
       <Route path="/bridge" component={Bridge} />
       <Route path="/pools" component={Pools} />
-      <Route path="/stake" component={Stake} />
-      <Route path="/rewards" component={Rewards} />
+      {/* <Route path="/stake" component={Stake} /> */}
+      {/* <Route path="/rewards" component={Rewards} /> */}
       <Route component={NotFound} />
     </Switch>
   );
