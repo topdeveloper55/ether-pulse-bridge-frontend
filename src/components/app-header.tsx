@@ -82,7 +82,7 @@ export default function AppHeader() {
                 Connect Wallet
               </Button>
             ) : (
-              <div className="flex items-center bg-neutral-800 rounded-lg p-1.5 text-sm">
+              <div className="flex items-center bg-neutral-800 rounded-lg p-1.5 text-sm hover:cursor-pointer" onClick={() => wallet.disconnectWallet()}>
                 <div className="h-2 w-2 bg-success-500 rounded-full mr-2"></div>
                 <span className="text-white font-mono mr-2">{formatAddress(wallet.address)}</span>
                 <div className="bg-neutral-700 rounded-full p-1">

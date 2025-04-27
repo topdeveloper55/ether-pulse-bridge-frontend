@@ -51,6 +51,7 @@ const PoolCardGrid = () => {
         continue;
       }
     }
+    const sortedBuf = buf.sort((pool1, pool2) => pool2.stakedAmount - pool1.stakedAmount);
     setPools(buf);
   }
 
@@ -59,7 +60,7 @@ const PoolCardGrid = () => {
   }, [wallet])
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 rounded bg-neutral-300">
+    <div className="min-h-screen bg-gray-200 p-6 rounded bg-neutral-300">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Pool Dashboard</h1>
         <div className="flex flex-wrap -mx-4">

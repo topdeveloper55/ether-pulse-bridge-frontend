@@ -8,8 +8,10 @@ export interface Asset {
   decimals: number;
 }
 
-interface TokenInfo {
+export interface TokenInfo {
   name: string;
+  symbol: string;
+  iconUrl: string;
   address: string;
   decimal: number;
 }

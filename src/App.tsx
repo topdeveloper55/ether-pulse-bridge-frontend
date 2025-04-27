@@ -10,6 +10,7 @@ import AppHeader from "./components/app-header";
 import AppFooter from "./components/app-footer";
 import { useState, useEffect } from "react";
 import { WalletContext, WalletContextType } from "./lib/wallet";
+import { ToastContainer } from 'react-toastify';
 
 function Router() {
   return (
@@ -117,7 +118,7 @@ function App() {
           </div>
           <AppFooter />
         </div>
-        <Toaster />
+        <ToastContainer />
       </WalletContext.Provider>
     </QueryClientProvider>
   );

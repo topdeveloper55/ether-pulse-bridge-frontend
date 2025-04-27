@@ -2,7 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Pool } from "../pool-card-grid";
 import { ethers } from "ethers";
 import poolABI from "../../ABI/pool.json";
+import tokenABI from "../../ABI/token.json";
 import { WalletContext } from "../../lib/wallet";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PoolCard: React.FC<Pool> = ({
   network,
@@ -16,10 +19,16 @@ const PoolCard: React.FC<Pool> = ({
 }) => {
   const [totalStaked, setTotalStaked] = useState<number>(0);
   const [userRewards, setUserRewards] = useState<number>(0);
+  const [userStaked, setUserStaked] = useState<number>(0);
   const [addAmount, setAddAmount] = useState<number>(0);
-  const wallet = useContext(WalletContext);
+  const [allowance, setAllowance] = useState<number>(0);
+  const { connectWallet } = useContext(WalletContext);
 
   const handleAddLiquidity = async () => {
+    if (!user) {
+      toast("Please connect to wallet.");
+      return;
+    }
     if (window.ethereum) {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -31,12 +40,15 @@ const PoolCard: React.FC<Pool> = ({
         console.log("token Amount:", tokenAmount)
         const tx = await poolContract.stake(tokenAddress, tokenAmount);
         await tx.wait();
-        window.alert("Success");
+        fetchData();
+        toast("Success");
       } catch (error) {
         console.error(error);
+        toast("Failed. Try again.")
       }
     } else {
       console.error('No Ethereum provider found. Connect to MetaMask.');
+      toast("No Ethereum provider found. Connect to MetaMask.");
     }
   }
 
@@ -52,15 +64,78 @@ const PoolCard: React.FC<Pool> = ({
         buf = await poolContract.userInfo(tokenAddress, user);
         realAmount = Number(ethers.formatUnits(buf[3], decimal));
         setUserRewards(realAmount);
+        realAmount = Number(ethers.formatUnits(buf[2], decimal));
+        setUserStaked(realAmount);
       }
     } catch (err) {
       console.log(err);
+    }
+
+    if (user) {
+      const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+      try {
+        let buf = await tokenContract.allowance(user, pool);
+        let realAmount = Number(ethers.formatUnits(buf, decimal));
+        console.log("allowance:", realAmount);
+        setAllowance(realAmount);
+      } catch(err) {
+        console.error(err);
+      }
+    }
+  }
+
+  const handleApprove = async () => {
+    if(!user) {
+      toast("Please connect to wallet.");
+      return;
+    }
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      // Set the contract
+      const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+      try {
+        const tokenAmount = ethers.parseUnits("100000000", decimal)
+        const tx = await tokenContract.approve(pool, tokenAmount);
+        await tx.wait();
+        fetchData();
+        toast("Success");
+      } catch (error) {
+        console.error(error);
+        toast("Failed. Try again.");
+      }
+    } else {
+      console.error('No Ethereum provider found. Connect to MetaMask.');
+      toast("No Ethereum provider found. Connect to MetaMask.");
+    }
+  }
+
+  const handleWithdraw = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      // Set the contract
+      const poolContract = new ethers.Contract(pool, poolABI, signer);
+      try {
+        const tx = await poolContract.withdraw(tokenAddress);
+        await tx.wait();
+        fetchData();
+        toast("Success");
+      } catch (error) {
+        console.error(error);
+        toast("Failed. Try again.");
+      }
+    } else {
+      console.error('No Ethereum provider found. Connect to MetaMask.');
+      toast("No Ethereum provider found. Connect to MetaMask.");
     }
   }
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   return (
     <div className="w-full sm:w-1/1 md:w-1/2 lg:w-1/3 p-4">
@@ -80,12 +155,12 @@ const PoolCard: React.FC<Pool> = ({
 
           {/* Footer Part - Position and Rewards */}
           {user && <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Your Staked Amount:</span> {stakedAmount.toFixed(2)}
+            <div className="space-y-2 text-md" style={{color: "blueviolet"}}>
+              <p>
+                Your Staked Amount: <span className="font-medium">{userStaked.toFixed(2)}</span>
               </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Your Rewards:</span> {userRewards.toFixed(2)}
+              <p>
+                Your Rewards: <span className="font-medium">{userRewards.toFixed(2)}</span>
               </p>
             </div>
           </div>}
@@ -99,13 +174,16 @@ const PoolCard: React.FC<Pool> = ({
               />
               <button
                 onClick={handleAddLiquidity}
-                className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg ml-2">
+                className="text-white font-bold py-2 px-4 rounded-lg ml-2" style={{backgroundColor: "blueviolet"}}>
                 Add
               </button>
             </div>
-            <button className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full">
-              Remove
-            </button>
+            {(user && allowance > 0) && <button className="text-white font-bold py-2 px-4 rounded-lg w-full" style={{backgroundColor: "midnightblue"}} onClick={handleWithdraw}>
+              Withdraw
+            </button>}
+            {allowance == 0 && <button className="text-white font-bold py-2 px-4 rounded-lg w-full" style={{backgroundColor: "blueviolet"}} onClick={handleApprove} >
+              Approve
+            </button>}
           </div>
         </div>
 
