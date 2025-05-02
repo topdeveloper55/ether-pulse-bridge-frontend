@@ -15,14 +15,16 @@ export const CHAINS: Chain[] = [
     },
     {
         id: 2,
-        name: "Sepolia",
+        name: "Polygon",
         network: "Testnet",
-        chainId: 11155111,
+        chainId: 80002,
         iconUrl: "https://assets.crypto.ro/logos/ethereum-eth-logo.png",
-        rpcUrl: "https://sepolia.infura.io",
-        blockExplorerUrl: "https://sepolia.etherscan.io",
+        rpcUrl: "https://rpc-amoy.polygon.technology",
+        blockExplorerUrl: "https://amoy.polygonscan.com",
         pool: "0x26D75d588BA18B85d1f497A4CC65685e9bcFE527",
-        bridge: "",
+        bridge: "0xDA89eeeba6414b7c9A4EE28FE8353B226D6Ee0E9",
         tokens: [{ name: "USDC", address: "0xA3112c1eADA97dd4cA15685789C4ba622ad62E2a", decimal: 6, symbol: "USDC", iconUrl: "" }]
     }
 ]
+
+export const SERVER_URL = "http://localhost:3001"

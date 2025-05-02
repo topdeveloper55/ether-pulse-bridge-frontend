@@ -30,17 +30,15 @@ export interface Chain {
 }
 
 export interface Transaction {
-  id: number;
   txHash: string;
-  fromChain: string;
-  toChain: string;
-  assetId: number;
-  amount: string;
-  fee: string;
-  status: string;
-  walletAddress: string;
+  from: string;
+  to: string;
+  sourceChain: number;
+  targetChain: number;
+  token: string;
+  amount: number;
+  confirmed: boolean;
   timestamp: string;
-  asset: Asset;
 }
 
 export interface LiquidityPool {

@@ -14,6 +14,12 @@ import { TokenInfo } from "../types";
 import { ethers } from "ethers";
 import bridgeABI from "../ABI/bridge.json";
 import tokenABI from "../ABI/token.json";
+import { SERVER_URL } from "../constant";
+import axios from "axios";
+
+const delay = async (ms: number | undefined) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export default function BridgeCard() {
   const wallet = useContext(WalletContext);
@@ -46,7 +52,7 @@ export default function BridgeCard() {
 
   useEffect(() => {
     fetchAllowance();
-  }, [wallet, selectedAsset, fromChain, ])
+  }, [wallet, selectedAsset, fromChain,])
 
   const fetchAllowance = async () => {
     if (wallet.isConnected && selectedAsset) {
@@ -62,8 +68,16 @@ export default function BridgeCard() {
     }
   }
 
+  const isSourceChain = (): boolean => {
+    if (wallet.chainId != fromChain?.chainId) {
+      toast(`Wrong network. Please connect to ${fromChain?.name}.`);
+      return false;
+    } else return true;
+  }
+
   const handleApprove = async () => {
     if (window.ethereum && selectedAsset) {
+      if (!isSourceChain()) return;
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
@@ -131,6 +145,20 @@ export default function BridgeCard() {
     return (value * 0.97).toFixed(6);
   };
 
+  const isSuccessed = async (txHash: string): Promise<boolean> => {
+    for (let i = 0; i < 60; i++) {
+      try {
+        await delay(10000);
+        let buf = await axios.get(`${SERVER_URL}/transactions/${txHash}`);
+        if(buf.data.length > 0) return true;
+      } catch (err) {
+        console.error(err);
+        continue;
+      }
+    }
+    return false;
+  }
+
   const handleBridgeSubmit = async () => {
     if (!wallet.isConnected) {
       toast("Wallet not connected.");
@@ -142,12 +170,11 @@ export default function BridgeCard() {
       return;
     }
 
-    console.log("amount:", amount);
-
     if (!parseFloat(amount) || parseFloat(amount) <= 0) {
       toast("Invalid Amount: Please enter a valid amount to bridge.");
       return;
     }
+    if (!isSourceChain()) return;
     setIsBridging(true);
     if (window.ethereum) {
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -159,7 +186,15 @@ export default function BridgeCard() {
         const tokenAmount = ethers.parseUnits(amount.toString(), selectedAsset.decimal);
         const tx = await bridgeContract.lockTokens(wallet.address, selectedAsset.address, tokenAmount, toChain.chainId);
         await tx.wait();
-        toast("Transaction Success.");
+        const uniqueID = await bridgeContract.uniqueID();
+        const [from, to, token, amt, chainId, txHash] = await bridgeContract.txInfo(uniqueID);
+
+        const res = await isSuccessed(txHash);
+        console.log("res: ", res);
+        if(res) {
+          toast("Transaction Success.");
+          setIsBridging(false);
+        }
       } catch (error) {
         console.error(error);
         toast("Transaction Failed");

@@ -60,12 +60,13 @@ const PoolCard: React.FC<Pool> = ({
       let realAmount = Number(ethers.formatUnits(buf, decimal));
       setTotalStaked(realAmount);
 
-      if (user) {
+      if (user) {        
         buf = await poolContract.userInfo(tokenAddress, user);
-        realAmount = Number(ethers.formatUnits(buf[3], decimal));
-        setUserRewards(realAmount);
+        const currentRewards = Number(ethers.formatUnits(buf[3], decimal));        
         realAmount = Number(ethers.formatUnits(buf[2], decimal));
         setUserStaked(realAmount);
+        buf = await poolContract.currentRewards(tokenAddress, user);
+        setUserRewards(currentRewards + Number(ethers.formatUnits(buf, decimal)));
       }
     } catch (err) {
       console.log(err);
