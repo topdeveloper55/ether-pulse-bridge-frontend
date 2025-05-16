@@ -18,6 +18,7 @@ const PoolCard: React.FC<Pool> = ({
   stakedAmount
 }) => {
   const [totalStaked, setTotalStaked] = useState<number>(0);
+  const [poolBalance, setPoolBalance] = useState<number>(0);
   const [userRewards, setUserRewards] = useState<number>(0);
   const [userStaked, setUserStaked] = useState<number>(0);
   const [addAmount, setAddAmount] = useState<number>(0);
@@ -55,14 +56,19 @@ const PoolCard: React.FC<Pool> = ({
   const fetchData = async () => {
     const provider = new ethers.JsonRpcProvider(rpc);
     const poolContract = new ethers.Contract(pool, poolABI, provider);
+    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
     try {
-      let buf = await poolContract.totalStaked(tokenAddress);
+      let buf = await tokenContract.balanceOf(pool);
       let realAmount = Number(ethers.formatUnits(buf, decimal));
+      setPoolBalance(realAmount);
+
+      buf = await poolContract.totalStaked(tokenAddress);
+      realAmount = Number(ethers.formatUnits(buf, decimal));
       setTotalStaked(realAmount);
 
-      if (user) {        
+      if (user) {
         buf = await poolContract.userInfo(tokenAddress, user);
-        const currentRewards = Number(ethers.formatUnits(buf[3], decimal));        
+        const currentRewards = Number(ethers.formatUnits(buf[3], decimal));
         realAmount = Number(ethers.formatUnits(buf[2], decimal));
         setUserStaked(realAmount);
         buf = await poolContract.currentRewards(tokenAddress, user);
@@ -79,14 +85,14 @@ const PoolCard: React.FC<Pool> = ({
         let realAmount = Number(ethers.formatUnits(buf, decimal));
         console.log("allowance:", realAmount);
         setAllowance(realAmount);
-      } catch(err) {
+      } catch (err) {
         console.error(err);
       }
     }
   }
 
   const handleApprove = async () => {
-    if(!user) {
+    if (!user) {
       toast("Please connect to wallet.");
       return;
     }
@@ -148,20 +154,23 @@ const PoolCard: React.FC<Pool> = ({
         </div>
 
         <div className='px-4 pb-4'>
-          <div className="flex-grow flex items-center justify-center p-6">
-            <p className="text-4xl md:text-5xl font-bold text-gray-800 text-center">
-              {totalStaked.toFixed(0)}
+          <div className="items-center justify-center p-6">
+            <p className="text-3xl md:text-4xl font-bold text-gray-800 text-center">
+              {Number(poolBalance.toFixed(0)).toLocaleString()}
+            </p>
+            <p className="text-2xl md:text-3xl font-bold text-gray-800 text-center">
+              {`(${Number(totalStaked.toFixed(0)).toLocaleString()})`}
             </p>
           </div>
 
           {/* Footer Part - Position and Rewards */}
           {user && <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <div className="space-y-2 text-md" style={{color: "blueviolet"}}>
+            <div className="space-y-2 text-md" style={{ color: "blueviolet" }}>
               <p>
-                Your Staked Amount: <span className="font-medium">{userStaked.toFixed(2)}</span>
+                Your Staked Amount: <span className="font-medium">{Number(userStaked.toFixed(2)).toLocaleString()}</span>
               </p>
               <p>
-                Your Rewards: <span className="font-medium">{userRewards.toFixed(2)}</span>
+                Your Rewards: <span className="font-medium">{Number(userRewards.toFixed(2)).toLocaleString()}</span>
               </p>
             </div>
           </div>}
@@ -175,14 +184,14 @@ const PoolCard: React.FC<Pool> = ({
               />
               <button
                 onClick={handleAddLiquidity}
-                className="text-white font-bold py-2 px-4 rounded-lg ml-2" style={{backgroundColor: "blueviolet"}}>
+                className="text-white font-bold py-2 px-4 rounded-lg ml-2" style={{ backgroundColor: "blueviolet" }}>
                 Add
               </button>
             </div>
-            {(user && allowance > 0) && <button className="text-white font-bold py-2 px-4 rounded-lg w-full" style={{backgroundColor: "midnightblue"}} onClick={handleWithdraw}>
+            {(user && allowance > 0) && <button className="text-white font-bold py-2 px-4 rounded-lg w-full" style={{ backgroundColor: "midnightblue" }} onClick={handleWithdraw}>
               Withdraw
             </button>}
-            {allowance == 0 && <button className="text-white font-bold py-2 px-4 rounded-lg w-full" style={{backgroundColor: "blueviolet"}} onClick={handleApprove} >
+            {allowance == 0 && <button className="text-white font-bold py-2 px-4 rounded-lg w-full" style={{ backgroundColor: "blueviolet" }} onClick={handleApprove} >
               Approve
             </button>}
           </div>

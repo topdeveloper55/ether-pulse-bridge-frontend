@@ -150,7 +150,7 @@ export default function BridgeCard() {
       try {
         await delay(10000);
         let buf = await axios.get(`${SERVER_URL}/transactions/${txHash}`);
-        if(buf.data.length > 0) return true;
+        if(buf.data.length > 0 && buf.data[0].confirmed) return true;
       } catch (err) {
         console.error(err);
         continue;
